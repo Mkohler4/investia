@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "investment"
+version = "0.1.0"
+description = ""
+authors = ["Mkohler4 <Mkohler4@uwo.ca>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+langchain-openai = "^0.1.19"
+streamlit = "^1.37.0"
+pandas = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
