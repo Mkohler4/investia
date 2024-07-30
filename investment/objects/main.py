@@ -5,7 +5,7 @@ from objects.items.house import House, MortgageCalculator
 def manage_objects():
     # Initialize session state for the house object and slider limits
     if "house" not in st.session_state:
-        st.session_state.house = House(price=100000, date=datetime.now().date())  # Initial price of 100,000
+        st.session_state.house = House(price=100000, annual_interest_rate=5, term_years=30, date=datetime.now().date())  # Initial price of 100,000
     if "min_price" not in st.session_state:
         st.session_state.min_price = 0.0
     if "max_price" not in st.session_state:
@@ -56,13 +56,5 @@ def manage_objects():
     # Display the down payment
     st.write(f"Down payment for House: ${st.session_state.house.calculate_down_payment():.2f}")
 
-    # Create a temporary MortgageCalculator instance for calculations
-    mortgage_calculator = MortgageCalculator(
-        price=st.session_state.house.price,
-        annual_interest_rate=5,  # Example interest rate
-        term_years=30,  # Example term in years
-        down_payment_percentage=st.session_state.house.calculate_down_payment() / st.session_state.house.price
-    )
-
-    # Display the morgage rate
-    st.write(f"The morgage rate for the House: ${mortgage_calculator.calculate_monthly_payment():.2f}")
+    # Display the mortgage rate
+    st.write(f"The mortgage rate for the House: ${st.session_state.house.calculate_monthly_payment():.2f}")
