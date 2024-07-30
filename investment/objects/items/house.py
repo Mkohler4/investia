@@ -1,8 +1,9 @@
 from datetime import date
+from objects.items.object import BaseObject
 
-class MortgageCalculator:
-    def __init__(self, price, annual_interest_rate, term_years, down_payment_percentage=None):
-        self.price = price
+class Mortgage(BaseObject):
+    def __init__(self, price, annual_interest_rate, term_years, down_payment_percentage=None, date=date.today()):
+        super().__init__(price, date)
         self.annual_interest_rate = annual_interest_rate
         self.term_years = term_years
         self.down_payment_percentage = down_payment_percentage
@@ -41,8 +42,11 @@ class MortgageCalculator:
 
         monthly_payment = P * (r * (1 + r) ** n) / ((1 + r) ** n - 1)
         return monthly_payment
+    
+    def update_date(self, new_date):
+        self.date = new_date
 
-class House(MortgageCalculator):
+class House(Mortgage):
     def __init__(self, price, annual_interest_rate, term_years, date=date.today(), down_payment_percentage=None):
         super().__init__(price, annual_interest_rate, term_years, down_payment_percentage)
         self.date = date

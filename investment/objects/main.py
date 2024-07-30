@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta
-from objects.items.house import House, MortgageCalculator
+from objects.items.house import House, Mortgage
 
 def manage_objects():
     # Initialize session state for the house object and slider limits

@@ -9,7 +9,6 @@ def rename_account(i, new_name):
     st.session_state.account_names[i] = new_name
 
 def manage_accounts():
-
     # Initialize session state for the number of accounts
     if "num_accounts" not in st.session_state:
         st.session_state.num_accounts = 1

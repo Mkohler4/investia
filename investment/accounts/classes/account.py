@@ -1,17 +1,17 @@
 class Account:
-    def __init__(self, name, balance, input_rate, grow_rate):
+    def __init__(self, name, balance, input_rate, interest_rate):
         """
         Initialize the Account.
         
         :param name: str - The name of the account.
         :param balance: float - The initial balance of the account.
         :param input_rate: float - The amount of money deposited per period.
-        :param grow_rate: float - The growth rate per period (e.g., 0.01 for 1% growth per period).
+        :param interest_rate: float - The growth rate per period (e.g., 0.01 for 1% growth per period).
         """
         self.name = name
         self.balance = balance
         self.input_rate = input_rate
-        self.grow_rate = grow_rate
+        self.interest_rate = interest_rate
 
     def update_balance(self, time_periods):
         """
@@ -23,7 +23,7 @@ class Account:
             # Add the deposited amount to the balance
             self.balance += self.input_rate
             # Apply the growth rate (compounding)
-            self.balance *= (1 + self.grow_rate)
+            self.balance *= (1 + self.interest_rate)
 
     def __str__(self):
         return f'{self.name}: {self.balance}'
