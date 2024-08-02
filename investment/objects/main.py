@@ -112,8 +112,16 @@ def manage_objects():
     months = st.slider("Select number of months for projection", 1, 60, 12)
 
     st.header(f"Projected Income Over Time: ({months} months)")
-    
+
     # Plot the projected balances
     financial_manager.plot_projected_balances(months)
+
+    st.header(f"Projected Income with Puchases Over Time: ({months} months)")
+
+    financial_manager.plot_projected_balances_with_objects(months)
+
+    st.header(f"Projected Income with Purchases and Monthly Expenses Over Time: ({months} months)")
+
+    financial_manager.plot_projected_balances_with_objects_and_monthly_expenses(months)
 
     

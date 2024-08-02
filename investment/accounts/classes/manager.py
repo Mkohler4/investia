@@ -55,8 +55,163 @@ class FinancialManager:
         
         return balances_over_time, total_balances
     
+    def calulate_balances_over_time_with_objects(self, months):
+        # Use today's date as the start date
+        start_date = date.today()
+
+        # Prepare dictionary to hold balance projections for each account
+        balances_over_time = {account.name: [account.balance] for account in self.accounts}
+
+        # Create a copy of the accounts to work with
+        accounts_copy = deepcopy(self.accounts)
+
+        # Calculate the monthly balance projections for all accounts
+        for month in range(months):
+            for obj in self.objects:
+                # Calculate months until purchase
+                months_until_purchase = (obj.date.year - start_date.year) * 12 + (obj.date.month - start_date.month)
+                
+                # Check if the object's purchase is this month
+                if months_until_purchase == month:
+                    # Sort accounts by interest rate, then by balance
+                    sorted_accounts = sorted(accounts_copy, key=lambda a: (a.interest_rate, a.balance))
+
+                    # Determine the amount to subtract (for objects that are houses, calculate down payment)
+                    amount_to_subtract = obj.calculate_down_payment() if isinstance(obj, House) else obj.price
+
+                    # Subtract from the best accounts in order
+                    for account in sorted_accounts:
+                        if amount_to_subtract <= 0:
+                            break
+
+                        # Subtract from the account
+                        deducted_amount = min(account.balance, amount_to_subtract)
+                        account.balance -= deducted_amount
+                        amount_to_subtract -= deducted_amount
+
+            for account in accounts_copy:
+                # Add input rate to balance
+                account.balance += account.input_rate
+
+                # Calculate the monthly interest and apply it
+                monthly_interest_rate = (1 + account.interest_rate / 100) ** (1/12) - 1
+                account.balance *= (1 + monthly_interest_rate)
+
+                # Append the updated balance to the list
+                balances_over_time[account.name].append(account.balance)
+
+        # Calculate total balance over time
+        total_balances = [sum(balances) for balances in zip(*balances_over_time.values())]
+        
+        # Return the balance projections for each account and the total balance over time
+        return balances_over_time, total_balances
+    
+    def calulcate_balances_over_time_with_objects_and_monthly_expenses(self, months):
+        # Use today's date as the start date
+        start_date = date.today()
+
+        # Prepare dictionary to hold balance projections for each account
+        balances_over_time = {account.name: [account.balance] for account in self.accounts}
+
+        # Create a copy of the accounts to work with
+        accounts_copy = deepcopy(self.accounts)
+
+        # Calculate the monthly balance projections for all accounts
+        for month in range(months):
+            for obj in self.objects:
+                # Calculate months until purchase
+                months_until_purchase = (obj.date.year - start_date.year) * 12 + (obj.date.month - start_date.month)
+                # Sort accounts by interest rate, then by balance
+                sorted_accounts = sorted(accounts_copy, key=lambda a: (a.interest_rate, a.balance))
+                # Check if the object's purchase is this month
+                if months_until_purchase == month:
+                    # Determine the amount to subtract (for objects that are houses, calculate down payment)
+                    amount_to_subtract = obj.calculate_down_payment() if isinstance(obj, House) else obj.price
+
+                    # Subtract from the best accounts in order
+                    for account in sorted_accounts:
+                        if amount_to_subtract <= 0:
+                            break
+
+                        # Subtract from the account
+                        deducted_amount = min(account.balance, amount_to_subtract)
+                        account.balance -= deducted_amount
+                        amount_to_subtract -= deducted_amount
+            
+                elif month > months_until_purchase:
+                    if isinstance(obj, House):
+                        # Calculate the monthly mortgage payment
+                        monthly_payment = obj.calculate_monthly_payment()
+                        # Subtract the monthly payment from the best accounts in order
+                        for account in sorted_accounts:
+                            if monthly_payment <= 0:
+                                break
+
+                            deducted_amount = min(account.balance, monthly_payment)
+                            account.balance -= deducted_amount
+                            monthly_payment -= deducted_amount
+
+            for account in accounts_copy:
+                # Add input rate to balance
+                account.balance += account.input_rate
+
+                # Calculate the monthly interest and apply it
+                monthly_interest_rate = (1 + account.interest_rate / 100) ** (1/12) - 1
+                account.balance *= (1 + monthly_interest_rate)
+
+                # Append the updated balance to the list
+                balances_over_time[account.name].append(account.balance)
+
+        # Calculate total balance over time
+        total_balances = [sum(balances) for balances in zip(*balances_over_time.values())]
+        
+        # Return the balance projections for each account and the total balance over time
+        return balances_over_time, total_balances
+    
     def plot_projected_balances(self, months):
         account_balances, total_balances = self.calculate_balance_over_time(months)
+
+        # Plotting the balances over time
+        plt.figure(figsize=(12, 7))
+
+        # Plot individual account balances
+        for account_name, balances in account_balances.items():
+            plt.plot(range(months + 1), balances, label=account_name)
+
+        # Plot total balance
+        plt.plot(range(months + 1), total_balances, label="Total Balance", linewidth=2, linestyle='--')
+
+        plt.xlabel("Month")
+        plt.ylabel("Balance ($)")
+        plt.legend()
+        plt.grid(True)
+
+        # Use Streamlit to display the plot
+        st.pyplot(plt)
+
+    def plot_projected_balances_with_objects(self, months):
+        account_balances, total_balances = self.calulate_balances_over_time_with_objects(months)
+
+        # Plotting the balances over time
+        plt.figure(figsize=(12, 7))
+
+        # Plot individual account balances
+        for account_name, balances in account_balances.items():
+            plt.plot(range(months + 1), balances, label=account_name)
+
+        # Plot total balance
+        plt.plot(range(months + 1), total_balances, label="Total Balance", linewidth=2, linestyle='--')
+
+        plt.xlabel("Month")
+        plt.ylabel("Balance ($)")
+        plt.legend()
+        plt.grid(True)
+
+        # Use Streamlit to display the plot
+        st.pyplot(plt)
+    
+    def plot_projected_balances_with_objects_and_monthly_expenses(self, months):
+        account_balances, total_balances = self.calulcate_balances_over_time_with_objects_and_monthly_expenses(months)
 
         # Plotting the balances over time
         plt.figure(figsize=(12, 7))
@@ -178,47 +333,47 @@ class FinancialManager:
         """Adjusts other objects' attributes to ensure overall affordability."""
         print("Adjusting other objects...")
 
-        # Sort objects by purchase date
-        sorted_objects = sorted(self.objects, key=lambda obj: obj.date)
+        # # Sort objects by purchase date
+        # sorted_objects = sorted(self.objects, key=lambda obj: obj.date)
         
-        # Find the index of the target object
-        target_index = sorted_objects.index(target_object)
+        # # Find the index of the target object
+        # target_index = sorted_objects.index(target_object)
 
-        # Iterate through objects in chronological order
-        for idx, obj in enumerate(sorted_objects):
-            if idx != target_index:
-                # Calculate months between the target object's date and the next purchase
-                months_after_target = self.months_between(target_object.date, obj.date)
+        # # Iterate through objects in chronological order
+        # for idx, obj in enumerate(sorted_objects):
+        #     if idx != target_index:
+        #         # Calculate months between the target object's date and the next purchase
+        #         months_after_target = self.months_between(target_object.date, obj.date)
 
-                print(f"Months after target: {months_after_target}")
+        #         print(f"Months after target: {months_after_target}")
 
-                # Update income growth between the target object and this object
-                additional_income = self.calculate_income_at_date(target_object)
-                remaining_net_affordability += additional_income
+        #         # Update income growth between the target object and this object
+        #         additional_income = self.calculate_income_at_date(target_object)
+        #         remaining_net_affordability += additional_income
 
-                print(f"Remaining net affordability: ${remaining_net_affordability:.2f}")
+        #         print(f"Remaining net affordability: ${remaining_net_affordability:.2f}")
 
-                if isinstance(target_object, House) and target_index < idx:
-                    # Subtract monthly mortgage payments if purchasing objects after the house
-                    monthly_payment = target_object.calculate_monthly_payment()
-                    remaining_net_affordability -= monthly_payment * months_after_target
+        #         if isinstance(target_object, House) and target_index < idx:
+        #             # Subtract monthly mortgage payments if purchasing objects after the house
+        #             monthly_payment = target_object.calculate_monthly_payment()
+        #             remaining_net_affordability -= monthly_payment * months_after_target
 
-                    print(f"Remaining net affordability after mortgage payments: ${remaining_net_affordability:.2f}")
+        #             print(f"Remaining net affordability after mortgage payments: ${remaining_net_affordability:.2f}")
 
-                if isinstance(obj, House):
-                    down_payment = obj.calculate_down_payment()
-                    print(f"Down payment for House {idx + 1}: ${down_payment:.2f}")
-                    if remaining_net_affordability - down_payment < 0:
-                        reduction = min(obj.price, abs(remaining_net_affordability))
-                        obj.price -= reduction
-                        remaining_net_affordability += reduction
-                        print(f"Adjusted House price to: ${obj.price:.2f}")
-                else:
-                    if remaining_net_affordability + obj.price < 0:
-                        reduction = min(obj.price, abs(remaining_net_affordability))
-                        obj.price -= reduction
-                        remaining_net_affordability += reduction
-                        print(f"Adjusted Object price to: ${obj.price:.2f}")
+        #         if isinstance(obj, House):
+        #             down_payment = obj.calculate_down_payment()
+        #             print(f"Down payment for House {idx + 1}: ${down_payment:.2f}")
+        #             if remaining_net_affordability - down_payment < 0:
+        #                 reduction = min(obj.price, abs(remaining_net_affordability))
+        #                 obj.price -= reduction
+        #                 remaining_net_affordability += reduction
+        #                 print(f"Adjusted House price to: ${obj.price:.2f}")
+        #         else:
+        #             if remaining_net_affordability + obj.price < 0:
+        #                 reduction = min(obj.price, abs(remaining_net_affordability))
+        #                 obj.price -= reduction
+        #                 remaining_net_affordability += reduction
+        #                 print(f"Adjusted Object price to: ${obj.price:.2f}")
 
     
 
