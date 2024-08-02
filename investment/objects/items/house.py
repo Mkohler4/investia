@@ -12,9 +12,9 @@ class Mortgage(BaseObject):
         self.down_payment = self.calculate_down_payment()
 
     def calculate_down_payment(self):
-        if self.price <= 500000:
+        if self.price < 500000:
             down_payment = self.price * 0.05
-        elif self.price <= 1000000:
+        elif self.price < 1000000:
             down_payment = 500000 * 0.05 + (self.price - 500000) * 0.10
         else:
             down_payment = self.price * 0.20
@@ -47,9 +47,13 @@ class Mortgage(BaseObject):
         self.date = new_date
 
 class House(Mortgage):
-    def __init__(self, price, annual_interest_rate, term_years, date=date.today(), down_payment_percentage=None):
+    def __init__(self, price, annual_interest_rate, term_years, down_payment_percentage=None, min_price=0, max_price=1000000):
         super().__init__(price, annual_interest_rate, term_years, down_payment_percentage)
-        self.date = date
+        self.min_price = min_price
+        self.max_price = max_price
+
+    
+
     
 ## EXAMPLE USAGE
 # house_price = 800000

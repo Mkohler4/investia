@@ -1,38 +1,37 @@
 import streamlit as st
+from accounts.classes.manager import FinancialManager
+from accounts.classes.account import Account
 
 def add_account():
-    st.session_state.num_accounts += 1
-    st.session_state.account_names.append(f"Account {st.session_state.num_accounts}")
-    st.session_state.account_values.append(0)
+    account_index = len(st.session_state.financial_manager.accounts) + 1
+    account = Account(name=f"Account {account_index}", balance=0, input_rate=0, interest_rate=0)
+    st.session_state.financial_manager.add_account(account)
 
 def rename_account(i, new_name):
-    st.session_state.account_names[i] = new_name
+    st.session_state.financial_manager.accounts[i].name = new_name
 
 def manage_accounts():
-    # Initialize session state for the number of accounts
-    if "num_accounts" not in st.session_state:
-        st.session_state.num_accounts = 1
+    # Initialize session state for FinancialManager
+    if "financial_manager" not in st.session_state:
+        st.session_state.financial_manager = FinancialManager()
+        # Initialize with one default account
+        st.session_state.financial_manager.add_account(Account(name="Account 1", balance=0, input_rate=0, interest_rate=0))
+    
+    financial_manager = st.session_state.financial_manager
 
-    # Initialize session state for account names
-    if "account_names" not in st.session_state:
-        st.session_state.account_names = ["Account 1"]
-
-    # Initialize session state for account values
-    if "account_values" not in st.session_state:
-        st.session_state.account_values = [0] * st.session_state.num_accounts
-
-    for i in range(st.session_state.num_accounts):
-        current_name = st.session_state.account_names[i]
+    for i, account in enumerate(financial_manager.accounts):
+        current_name = account.name
         st.subheader(current_name)
         new_name = st.text_input(f"Rename Account {i + 1}", value=current_name, key=f"rename_{i}")
         
         if new_name != current_name:
             rename_account(i, new_name)
         
-        account_value = st.number_input(f"{st.session_state.account_names[i]} $", min_value=0, step=10, key=f"account_{i}", value=st.session_state.account_values[i])
-        st.session_state.account_values[i] = account_value
+        account.balance = st.number_input(f"{account.name} Balance $", min_value=0.0, step=10.0, key=f"balance_{i}", value=float(account.balance))
+        account.input_rate = st.number_input(f"{account.name} Monthly Input Rate $", min_value=0.0, step=10.0, key=f"input_rate_{i}", value=float(account.input_rate))
+        account.interest_rate = st.number_input(f"{account.name} Annual Interest Rate %", min_value=0.0, step=0.01, key=f"interest_rate_{i}", value=float(account.interest_rate))
 
     st.button("Add Account", on_click=add_account)
 
-    net_worth = sum(st.session_state.account_values)
+    net_worth = sum(account.balance for account in financial_manager.accounts)
     st.header(f"Net Worth: ${net_worth:,.2f}")

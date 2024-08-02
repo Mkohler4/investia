@@ -23,7 +23,8 @@ class Account:
             # Add the deposited amount to the balance
             self.balance += self.input_rate
             # Apply the growth rate (compounding)
-            self.balance *= (1 + self.interest_rate)
+            self.balance *= (1 + self.interest_rate)   
+
 
     def __str__(self):
         return f'{self.name}: {self.balance}'
